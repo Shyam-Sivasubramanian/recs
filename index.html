@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Recommendation Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .form-card {
+            background: #2d2d44;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #404057;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.error {
+            background: #4a1f1f;
+            color: #ff6b6b;
+            border: 2px solid #6b2f2f;
+        }
+
+        .message.success {
+            background: #1f4a2f;
+            color: #51cf66;
+            border: 2px solid #2f6b3f;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .recommendations-list {
+            background: #2d2d44;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .recommendations-list h2 {
+            color: #e0e0e0;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .recommendation-item {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+            border: 2px solid #404057;
+            background: #1a1a2e;
+        }
+
+        .recommendation-item:hover {
+            transform: translateX(5px);
+        }
+
+        .recommendation-item.completed {
+            background: #1f3a2f;
+            border-color: #28a745;
+        }
+
+        .recommendation-item.rejected {
+            background: #3a1f1f;
+            border-color: #dc3545;
+        }
+
+        .recommendation-item.pending {
+            background: #1a1a2e;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .item-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #e0e0e0;
+        }
+
+        .item-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .item-type.movie {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .item-type.show {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .item-type.anime {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .item-info {
+            color: #a0a0a0;
+            font-size: 0.95em;
+            margin-top: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-label {
+            font-size: 0.9em;
+            color: #a0a0a0;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: #1a1a2e;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.movie {
+            border-color: #1976d2;
+            color: #1976d2;
+            background: #1a1a2e;
+        }
+
+        .filter-btn.movie.active {
+            background: #1976d2;
+            color: white;
+        }
+
+        .filter-btn.show {
+            border-color: #7b1fa2;
+            color: #7b1fa2;
+            background: #1a1a2e;
+        }
+
+        .filter-btn.show.active {
+            background: #7b1fa2;
+            color: white;
+        }
+
+        .filter-btn.anime {
+            border-color: #f57c00;
+            color: #f57c00;
+            background: #1a1a2e;
+        }
+
+        .filter-btn.anime.active {
+            background: #f57c00;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📺 Media Recommendation Tracker</h1>
+        
+        <div class="form-card">
+            <h2 style="margin-bottom: 20px; color: #e0e0e0;">Submit a Recommendation</h2>
+            <div id="messageContainer"></div>
+            
+            <form id="recommendationForm">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" required placeholder="Enter your name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" required placeholder="Name of the show/movie/anime">
+                </div>
+                
+                <div class="form-group">
+                    <label for="type">Type</label>
+                    <select id="type" required>
+                        <option value="">Select type...</option>
+                        <option value="movie">Movie</option>
+                        <option value="show">TV Show</option>
+                        <option value="anime">Anime</option>
+                    </select>
+                </div>
+                
+                <button type="submit">Submit Recommendation</button>
+            </form>
+        </div>
+        
+        <div class="recommendations-list">
+            <h2>All Recommendations</h2>
+            
+            <div class="filter-section">
+                <div class="filter-group">
+                    <div class="filter-label">Status:</div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-status-filter="all">All</button>
+                        <button class="filter-btn" data-status-filter="pending">Pending</button>
+                        <button class="filter-btn" data-status-filter="completed">Completed</button>
+                        <button class="filter-btn" data-status-filter="rejected">Rejected</button>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <div class="filter-label">Type:</div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn movie active" data-type-filter="all">All Types</button>
+                        <button class="filter-btn movie" data-type-filter="movie">🎬 Movies</button>
+                        <button class="filter-btn show" data-type-filter="show">📺 TV Shows</button>
+                        <button class="filter-btn anime" data-type-filter="anime">🎌 Anime</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="recommendationsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentStatusFilter = 'all';
+        let currentTypeFilter = 'all';
+        let recommendations = [];
+
+        async function loadRecommendations() {
+            try {
+                const response = await fetch('recommendations.json');
+                if (!response.ok) {
+                    recommendations = [];
+                    displayEmptyState();
+                    return;
+                }
+                recommendations = await response.json();
+                displayRecommendations(recommendations);
+            } catch (error) {
+                console.log('No recommendations file found or error loading:', error);
+                recommendations = [];
+                displayEmptyState();
+            }
+        }
+
+        function displayRecommendations(recs) {
+            const container = document.getElementById('recommendationsList');
+            
+            const filtered = recs.filter(rec => {
+                const statusMatch = currentStatusFilter === 'all' || rec.status === currentStatusFilter;
+                const typeMatch = currentTypeFilter === 'all' || rec.type === currentTypeFilter;
+                return statusMatch && typeMatch;
+            });
+
+            if (filtered.length === 0) {
+                displayEmptyState();
+                return;
+            }
+
+            const typeEmoji = {
+                'movie': '🎬',
+                'show': '📺',
+                'anime': '🎌'
+            };
+
+            container.innerHTML = filtered.map(rec => `
+                <div class="recommendation-item ${rec.status}">
+                    <div class="item-header">
+                        <div class="item-title">${typeEmoji[rec.type]} ${escapeHtml(rec.title)}</div>
+                        <span class="item-type ${rec.type}">${rec.type}</span>
+                    </div>
+                    <div class="item-info">
+                        Recommended by <strong>${escapeHtml(rec.name)}</strong> • 
+                        ${new Date(rec.timestamp).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                        })}
+                        ${rec.status !== 'pending' ? ` • <strong>${rec.status.charAt(0).toUpperCase() + rec.status.slice(1)}</strong>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayEmptyState() {
+            const container = document.getElementById('recommendationsList');
+            let message = 'No recommendations yet. Be the first to submit one!';
+            
+            if (currentStatusFilter !== 'all' || currentTypeFilter !== 'all') {
+                message = 'No recommendations match your current filters.';
+            }
+            
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                    </svg>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function showMessage(text, type) {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = `<div class="message ${type}">${text}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function normalizeTitle(title) {
+            return title.toLowerCase().trim().replace(/\s+/g, ' ');
+        }
+
+        function downloadJSON(data, filename) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('recommendationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const title = document.getElementById('title').value.trim();
+            const type = document.getElementById('type').value;
+
+            const normalizedTitle = normalizeTitle(title);
+
+            for (const rec of recommendations) {
+                if (normalizeTitle(rec.title) === normalizedTitle) {
+                    showMessage(`"${title}" has already been recommended by ${rec.name}!`, 'error');
+                    return;
+                }
+            }
+
+            const recommendation = {
+                id: Date.now().toString(),
+                name,
+                title,
+                type,
+                status: 'pending',
+                timestamp: new Date().toISOString()
+            };
+
+            recommendations.push(recommendation);
+            
+            downloadJSON(recommendations, 'recommendations.json');
+            
+            showMessage('Recommendation submitted! Download the updated recommendations.json file and commit it to your GitHub repository.', 'success');
+            
+            document.getElementById('recommendationForm').reset();
+            displayRecommendations(recommendations);
+        });
+
+        document.querySelectorAll('[data-status-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-status-filter]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentStatusFilter = btn.dataset.statusFilter;
+                displayRecommendations(recommendations);
+            });
+        });
+
+        document.querySelectorAll('[data-type-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-type-filter]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTypeFilter = btn.dataset.typeFilter;
+                displayRecommendations(recommendations);
+            });
+        });
+
+        loadRecommendations();
+    </script>
+</body>
+</html>
